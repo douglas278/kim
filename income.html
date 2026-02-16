@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Income 2024–2025 — Wide & Tall View</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      background-color: #0f0f0f;
+      color: #ddd;
+      margin: 0;
+      padding: 10px 12px;
+      font-family: system-ui, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .container {
+      flex: 1;
+      width: 100%;
+      max-width: 2400px;          /* Allows it to get very wide on large screens */
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+    }
+    h1 {
+      font-size: 1.5rem;
+      margin: 10px 0 15px;
+      text-align: center;
+      color: #fff;
+    }
+    canvas {
+      background-color: #181818;
+      border-radius: 8px;
+      flex: 1;
+      min-height: 680px;          /* ≈ twice as tall as previous ~340–360px effective height */
+      max-height: 820px;
+      width: 100% !important;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1>Monthly Income — Jan 2024 to Dec 2025</h1>
+  <canvas id="incomeChart"></canvas>
+</div>
+
+<script>
+// ── Data ────────────────────────────────────────────────────────────────
+const months = [];
+const start = new Date(2024, 0, 1);
+for (let i = 0; i < 24; i++) {
+  const d = new Date(start);
+  d.setMonth(i);
+  months.push(d.toLocaleString('default', {month:'short', year:'2-digit'}));
+}
+
+const regular    = Array(24).fill(9000);
+const retirement = Array(24).fill(2000);
+const overtime   = [
+  ...Array.from({length:12}, (_,i) => Math.round(9000 - i * (3000/11))),
+  ...Array(12).fill(100)
+];
+
+const data = {
+  labels: months,
+  datasets: [
+    { label: 'Retirement', data: retirement, backgroundColor: 'rgba(100, 180, 255, 0.9)'  },
+    { label: 'Regular',    data: regular,    backgroundColor: 'rgba(90, 210, 130, 0.9)'   },
+    { label: 'Overtime',   data: overtime,   backgroundColor: 'rgba(255, 150, 80, 0.9)'   }
+  ]
+};
+
+new Chart(document.getElementById('incomeChart'), {
+  type: 'bar',
+  data: data,
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'top',
+        labels: { boxWidth: 16, padding: 16, font: {size: 14}, color: '#ddd' }
+      },
+      tooltip: {
+        mode: 'index',
+        intersect: false,
+        callbacks: {
+          label: ctx => `${ctx.dataset.label}: $${ctx.parsed.y.toLocaleString()}`
+        }
+      }
+    },
+    scales: {
+      x: {
+        stacked: true,
+        ticks: {
+          color: '#bbb',
+          font: {size: 12},
+          maxRotation: 60,
+          minRotation: 60,
+          padding: 4
+        },
+        grid: {display: false}
+      },
+      y: {
+        stacked: true,
+        title: { display: true, text: 'Income ($)', color: '#ccc', font: {size: 14} },
+        ticks: {
+          color: '#bbb',
+          font: {size: 13},
+          callback: v => '$' + v.toLocaleString(),
+          stepSize: 5000
+        },
+        grid: { color: '#222' }
+      }
+    }
+  }
+});
+</script>
+
+</body>
+</html>
